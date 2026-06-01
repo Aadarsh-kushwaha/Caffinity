@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const flash = require("express-flash");
+const flash = require("connect-flash");
 const path = require("path");
 const ejsMate = require("ejs-mate");
 const Product = require("./models/product");
@@ -19,7 +19,7 @@ const app = express();
 const Query = require("./models/query");
 const cart = require("./models/cart");
 const User = require("./models/user");
-
+const cookieParser = require("cookie-parser");
 
 
 function isLoggedIn(req, res, next) {
@@ -74,11 +74,11 @@ const store = MongoStore.create({
 });
 
 
-
+app.use(cookieParser());
 app.use(session({
     secret: "cats",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
      cookie: {
       httpOnly: true,
       expires: Date.now() + 1000 * 60 * 60 * 24 * 3, // 3 days
@@ -304,23 +304,22 @@ app.post("/pushCart", isLoggedIn, async (req, res) => {
   }
 });
 
-
 app.get("/cart", isLoggedIn, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // cart find karo user ke liye
     const cartData = await Cart.findOne({ userId })
-      .populate("items.productId"); // 🔥 main magic
+      .populate("items.productId");
 
     if (!cartData) {
-      return res.render("cart/cart", { cart: [] });
+      return res.render("cart/cart", {
+        cart: []
+      });
     }
 
-    // EJS ke liye clean format
     const cart = cartData.items.map(item => {
       return {
-         productId: item.productId._id,  
+        productId: item.productId._id,
         name: item.productId.name,
         price: item.productId.price,
         image: item.productId.image,
@@ -328,7 +327,11 @@ app.get("/cart", isLoggedIn, async (req, res) => {
       };
     });
 
-    res.render("cart/cart", { cart });
+    console.log("locals success:", res.locals.success);
+
+    res.render("cart/cart", {
+      cart
+    });
 
   } catch (err) {
     console.log(err);
@@ -362,8 +365,13 @@ app.put("/cart/increase/:productId", isLoggedIn, async (req, res) => {
     }
   );
 
-  res.redirect("/cart");
+  req.flash("success", "Quantity Increased");
+
+  return res.redirect("/cart");
 });
+
+
+
 
 app.put("/cart/decrease/:productId", isLoggedIn, async (req, res) => {
   const userId = req.user._id;
@@ -375,37 +383,40 @@ app.put("/cart/decrease/:productId", isLoggedIn, async (req, res) => {
     i => i.productId.toString() === productId
   );
 
-  if (!item) return res.redirect("/cart");
+  if (!item) {
+    return res.redirect("/cart");
+  }
 
-  // ❗ agar quantity 1 hai → delete
   if (item.quantity <= 1) {
+
     await Cart.updateOne(
       { userId },
       {
-        $pull: { items: { productId: productId } }
+        $pull: { items: { productId } }
       }
     );
+
+    req.flash("success", "Product Removed");
+
   } else {
+
     await Cart.updateOne(
       { userId, "items.productId": productId },
       {
         $inc: { "items.$.quantity": -1 }
       }
     );
+
+    req.flash("success", "Quantity Decreased");
   }
 
-  res.redirect("/cart");
+  return res.redirect("/cart");
 });
-
 
 app.get("/err",(req ,res,) =>{
   abcd=abcd;
 });
-app.use((req, res, next) => {
-  res.locals.success = req.flash("success");
-  res.locals.error = req.flash("error");
-  next();
-});
+
 
 app.use((err, req, res, next) => {
  console.log(err);
