@@ -20,6 +20,8 @@ const Query = require("./models/query");
 const cart = require("./models/cart");
 const User = require("./models/user");
 const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+require("./passportConfig");
 
 
 function isLoggedIn(req, res, next) {
@@ -132,9 +134,12 @@ app.get('/auth/failure',(req,res)=>{
 });
 
 app.post("/signup", async (req, res) => {
+   console.log(req.body);
+   
     try {
         const { name, age, email, mobile, password, confirmPassword } = req.body;
 
+        
         if (password !== confirmPassword) {
             return res.send("Passwords do not match");
         }
@@ -145,21 +150,27 @@ app.post("/signup", async (req, res) => {
         }
 
         const newUser = new User({
-            name,
+            name: email,
             age,
             email,
             mobile,
             password,
         });
 
-        await newUser.save();
+      await newUser.save();
         res.send("Signup successful, please login");
     } catch (err) {
         res.send("Error: " + err.message);
     }
 });
 
-
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login"
+  })
+);
 
 app.get('/logout', (req, res, next) => {
   req.logout(err => {
@@ -225,7 +236,7 @@ app.get("/connect", (req, res) => {
 });
 
 
-app.get("/login", (req, res) => {
+app.get("/user", (req, res) => {
    res.render("users/login");
 });
 
