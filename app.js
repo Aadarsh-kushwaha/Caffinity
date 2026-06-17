@@ -22,7 +22,8 @@ const User = require("./models/user");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 require("./passportConfig");
-
+const bcrypt = require("bcrypt");
+const Order = require("./models/order");
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -133,32 +134,43 @@ app.get('/auth/failure',(req,res)=>{
   res.send("SOMETHING WENT WRONG...");
 });
 
-app.post("/signup", async (req, res) => {
-   console.log(req.body);
-   
+
+app.post("/signup", async (req, res, next) => {
     try {
         const { name, age, email, mobile, password, confirmPassword } = req.body;
 
-        
         if (password !== confirmPassword) {
-            return res.send("Passwords do not match");
+            return res.send("Passwords does not match");
         }
 
         const userExist = await User.findOne({ email });
+
         if (userExist) {
             return res.send("Email already registered");
         }
 
+          const hashedPassword = await bcrypt.hash(password, 10);
+
         const newUser = new User({
-            name: email,
+            name,
             age,
             email,
             mobile,
-            password,
+            password: hashedPassword
         });
 
-      await newUser.save();
-        res.send("Signup successful, please login");
+        await newUser.save();
+
+        req.login(newUser, (err) => {
+            if (err) {
+                console.log(err);
+                return next(err);
+            }
+
+            req.flash("success", "Welcome to Caffinity!");
+            res.redirect("/home");
+        });
+
     } catch (err) {
         res.send("Error: " + err.message);
     }
@@ -364,7 +376,7 @@ app.delete("/cart/:productId", isLoggedIn, async (req, res) => {
       }
     }
   );
-  req.flash("success", "Product deleted from the cart");
+  req.flash("success", "Product removed from the cart");
   res.redirect("/cart");
 });
 app.put("/cart/increase/:productId", isLoggedIn, async (req, res) => {
@@ -425,6 +437,93 @@ app.put("/cart/decrease/:productId", isLoggedIn, async (req, res) => {
 
   return res.redirect("/cart");
 });
+
+
+app.get("/checkout",isLoggedIn, async (req, res) => {
+  console.log("GET ROUTE");
+console.log(req.user);
+const cart = await Cart.findOne({
+   userId: req.user._id
+ 
+}).populate("items.productId");
+
+console.log("Cart:", cart);
+if (!cart || cart.items.length === 0) {
+  return res.redirect("/cart");
+}
+
+let total = 0;
+
+cart.items.forEach(item => {
+  total += item.productId.price * item.quantity;
+});
+
+    res.render("cart/checkout", { cart, total });
+});
+
+app.post("/checkout",isLoggedIn, async (req, res) => {
+  console.log(req.user);
+
+    const cart = await Cart.findOne({
+        userId: req.user._id
+    }).populate("items.productId");
+
+    if (!cart || cart.items.length === 0) {
+        return res.redirect("/cart");
+    }
+
+    let total = 0;
+    const orderItems = [];
+
+    for (let item of cart.items) {
+
+        total += item.productId.price * item.quantity;
+
+        orderItems.push({
+            productId: item.productId._id,
+            name: item.productId.name,
+            price: item.productId.price,
+            quantity: item.quantity,
+            image: item.productId.image
+        });
+    }
+
+    // 🔥 CUSTOMER DATA FROM FORM (NOT USER PROFILE)
+    const customerData = {
+        fullName: req.body.fullName,
+        phone: req.body.phone,
+        tableNumber: req.body.tableNumber,
+        instructions: req.body.instructions
+    };
+
+    const order = await Order.create({
+
+        userId: req.user._id,   // login reference
+
+        items: orderItems,
+
+        customer: customerData, // billing info
+
+        totalAmount: total,
+
+        status: "payment_pending"
+    });
+
+    req.session.orderId = order._id;
+
+    res.redirect("/payment");
+
+});
+
+app.get("/payment",isLoggedIn, async (req, res) => {
+
+    const order = await Order.findById(req.session.orderId);
+
+    if (!order) return res.redirect("/cart");
+
+    res.render("payment", { order });
+});
+
 
 app.get("/err",(req ,res,) =>{
   abcd=abcd;

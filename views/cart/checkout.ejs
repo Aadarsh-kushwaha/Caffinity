@@ -1,0 +1,457 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="checkout-wrapper">
+
+    <div class="checkout-card">
+
+        <!-- LEFT SECTION -->
+        <div class="checkout-left">
+
+            <div class="mb-4">
+                <span class="step-badge">STEP 1 OF 2</span>
+
+                <h1 class="brand-title mt-3">
+                    ☕ Caffinity Cafe
+                </h1>
+
+                <p class="brand-subtitle">
+                    Complete your order details before payment
+                </p>
+            </div>
+
+            <form action="/checkout" method="POST">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label custom-label">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control custom-input"
+                            name="fullName"
+                            placeholder="Your name here"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label custom-label">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            class="form-control custom-input"
+                            name="phone"
+                            placeholder="+91 XXXXX XXXXX"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label custom-label">
+                            Table Number
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control custom-input"
+                            name="tableNumber"
+                            placeholder="1-20"
+                            required
+                        >
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label custom-label">
+                            Email (Optional)
+                        </label>
+
+                        <input
+                            type="email"
+                            class="form-control custom-input"
+                            name="email"
+                            placeholder="john@gmail.com"
+                        >
+                    </div>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label custom-label">
+                        Special Instructions
+                    </label>
+
+                    <textarea
+                        class="form-control custom-input custom-textarea"
+                        name="instructions"
+                        placeholder="Any customization needed?"
+                    ></textarea>
+
+                </div>
+
+                <div class="mt-5">
+
+                    <button
+                        type="submit"
+                        class="btn payment-btn"
+                    >
+                        Continue To Payment →
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        <!-- RIGHT SECTION -->
+        <div class="checkout-right">
+
+            <h4 class="summary-heading">
+                Order Summary
+            </h4>
+
+            <div class="summary-box">
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>₹<%= total %></span>
+                </div>
+
+                <div class="summary-row">
+                    <span>GST (5%)</span>
+                    <span>₹<%= Math.round(total * 0.05) %></span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Platform Fee</span>
+                    <span>₹10</span>
+                </div>
+
+                <hr class="summary-divider">
+
+                <div class="summary-row total-row">
+                    <span>Total</span>
+
+                    <span>
+                        ₹<%= total + Math.round(total * 0.05) + 10 %>
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="secure-box">
+
+                <div class="mb-3">
+                    <h6 class="mb-1">
+                        Dine-In Order
+                    </h6>
+
+                    <small>
+                        Table service enabled
+                    </small>
+                </div>
+
+                <hr class="summary-divider">
+
+                <div>
+                    <small>
+                        🔒 Secure Checkout
+                    </small>
+
+                    <br>
+
+                    <small>
+                        Powered by Razorpay
+                    </small>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+body{
+    background:
+    linear-gradient(
+        135deg,
+        #f6efe7,
+        #efe1d2
+    );
+}
+
+/* OUTER WRAPPER */
+
+.checkout-wrapper{
+
+    min-height:90vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:40px 20px;
+}
+
+/* MAIN CARD */
+
+.checkout-card{
+
+    width:1200px;
+
+    max-width:100%;
+
+    min-height:700px;
+
+    background:white;
+
+    border-radius:32px;
+
+    overflow:hidden;
+
+    display:flex;
+
+    box-shadow:
+    0 25px 60px rgba(0,0,0,.08);
+}
+
+/* LEFT */
+
+.checkout-left{
+
+    width:75%;
+
+    padding:60px;
+}
+
+/* RIGHT */
+
+.checkout-right{
+
+    width:25%;
+
+    background:
+    linear-gradient(
+        180deg,
+        #6f4e37,
+        #4e342e
+    );
+
+    color:white;
+
+    padding:40px 30px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+}
+
+/* BRAND */
+
+.brand-title{
+
+    color:#4e342e;
+
+    font-weight:700;
+
+    font-size:2.2rem;
+}
+
+.brand-subtitle{
+
+    color:#8c7b70;
+
+    margin-top:10px;
+}
+
+.step-badge{
+
+    background:#f3e4d6;
+
+    color:#6f4e37;
+
+    padding:8px 14px;
+
+    border-radius:30px;
+
+    font-size:.8rem;
+
+    font-weight:600;
+}
+
+/* LABELS */
+
+.custom-label{
+
+    font-weight:600;
+
+    color:#4e342e;
+
+    margin-bottom:10px;
+}
+
+/* INPUTS */
+
+.custom-input{
+
+    border:none !important;
+
+    background:#f8f4ef !important;
+
+    border-radius:18px;
+
+    height:58px;
+
+    padding:0 20px;
+
+    font-size:15px;
+}
+
+.custom-input:focus{
+
+    background:white !important;
+
+    box-shadow:
+    0 0 0 4px rgba(111,78,55,.12) !important;
+}
+
+.custom-textarea{
+
+    height:140px !important;
+
+    padding-top:18px !important;
+
+    resize:none;
+}
+
+/* BUTTON */
+
+.payment-btn{
+
+    width:100%;
+
+    height:60px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:
+    linear-gradient(
+        90deg,
+        #6f4e37,
+        #8b5e3c
+    );
+
+    color:white;
+
+    font-weight:600;
+
+    font-size:1rem;
+
+    transition:.3s;
+}
+
+.payment-btn:hover{
+
+    color:white;
+
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 15px 25px rgba(111,78,55,.25);
+}
+
+/* SUMMARY */
+
+.summary-heading{
+
+    font-weight:700;
+
+    margin-bottom:25px;
+}
+
+.summary-box{
+
+    background:
+    rgba(255,255,255,.08);
+
+    border-radius:20px;
+
+    padding:20px;
+}
+
+.summary-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:18px;
+}
+
+.total-row{
+
+    font-size:1.2rem;
+
+    font-weight:700;
+}
+
+.summary-divider{
+
+    border-color:
+    rgba(255,255,255,.15);
+}
+
+.secure-box{
+
+    background:
+    rgba(255,255,255,.08);
+
+    padding:20px;
+
+    border-radius:20px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:992px){
+
+    .checkout-card{
+
+        flex-direction:column;
+    }
+
+    .checkout-left{
+
+        width:100%;
+
+        padding:35px;
+    }
+
+    .checkout-right{
+
+        width:100%;
+    }
+
+}
+
+</style>

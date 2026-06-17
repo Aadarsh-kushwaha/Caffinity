@@ -2,6 +2,7 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const User = require("./models/user");
+const bcrypt = require("bcrypt");
 
 
 passport.use(
@@ -19,9 +20,15 @@ passport.use(
           return done(null, false);
         }
 
-        if (user.password !== password) {
-          return done(null, false);
-        }
+      
+        const isMatch = await bcrypt.compare(
+         password,
+         user.password
+        );
+
+        if (!isMatch) {
+           return done(null, false);
+          }           
 
         return done(null, user);
 
@@ -32,45 +39,3 @@ passport.use(
   )
 );
 
-
-
-// // passportConfig.js
-// const express = require("express");
-// const mongoose = require("mongoose");
-// const SchemAa = mongoose.Schema;
-// const passport = require("passport");
-// const LocalStrategy = require("passport-local");
-// const User = require("./models/user");
-// const { message } = require("./schemas/contactSchema");
-// const LocalStrategy = require('passport-local').Strategy;
-
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-
-// passport.use(new LocalStrategy(
-//     function(username,password, done){
-//         console.log(username, password);
-//         User.findOne({username : username},function(err,user){
-//             if(err){ return done(err) ;}
-//             if(!user){
-//                 return done(null , false , {message : 'Incorrect username.'});
-//             }
-//             if(!user.validPassword(passport)){
-//                 return done(null , false ,{message : 'Incorrect password'});
-//             }
-//             return done(null, user);
-
-//         })
-//     }
-// ));
-
-// passport.serializeUser(User.serializeUser());
-
-// passport.deserializeUser(User.deserializeUser());
-
-// app.post('/login',
-//   passport.authenticate('local'),
-//   function(req, res) {
-//     res.redirect('/users');
-//   });
