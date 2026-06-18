@@ -10,12 +10,10 @@ passport.use(
     async (username, password, done) => {
       try {
 
-          console.log("Username:", username);
 
       const user = await User.findOne({ email: username });
 
-      console.log("User:", user);
-
+    
         if (!user) {
           return done(null, false);
         }

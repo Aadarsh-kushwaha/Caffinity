@@ -24,6 +24,8 @@ const bodyParser = require("body-parser");
 require("./passportConfig");
 const bcrypt = require("bcrypt");
 const Order = require("./models/order");
+const Razorpay = require("razorpay");
+require("dotenv").config();
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -108,6 +110,10 @@ passport.deserializeUser(async (id, done) => {
 });
 
 
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 // ====== Locals Middleware ======
 
@@ -324,7 +330,7 @@ app.post("/pushCart", isLoggedIn, async (req, res) => {
    res.redirect("/menu");
 
   } catch (err) {
-    console.log("ERROR 🔥:", err);
+    console.log("ERROR:", err);
     res.send("Error ❌");
   }
 });
@@ -351,8 +357,6 @@ app.get("/cart", isLoggedIn, async (req, res) => {
         quantity: item.quantity
       };
     });
-
-    console.log("locals success:", res.locals.success);
 
     res.render("cart/cart", {
       cart
@@ -440,14 +444,13 @@ app.put("/cart/decrease/:productId", isLoggedIn, async (req, res) => {
 
 
 app.get("/checkout",isLoggedIn, async (req, res) => {
-  console.log("GET ROUTE");
-console.log(req.user);
+
 const cart = await Cart.findOne({
    userId: req.user._id
  
 }).populate("items.productId");
 
-console.log("Cart:", cart);
+
 if (!cart || cart.items.length === 0) {
   return res.redirect("/cart");
 }
@@ -461,8 +464,7 @@ cart.items.forEach(item => {
     res.render("cart/checkout", { cart, total });
 });
 
-app.post("/checkout",isLoggedIn, async (req, res) => {
-  console.log(req.user);
+app.post("/checkout", async (req, res) => {
 
     const cart = await Cart.findOne({
         userId: req.user._id
@@ -473,7 +475,7 @@ app.post("/checkout",isLoggedIn, async (req, res) => {
     }
 
     let total = 0;
-    const orderItems = [];
+    let orderItems = [];
 
     for (let item of cart.items) {
 
@@ -488,21 +490,18 @@ app.post("/checkout",isLoggedIn, async (req, res) => {
         });
     }
 
-    // 🔥 CUSTOMER DATA FROM FORM (NOT USER PROFILE)
-    const customerData = {
-        fullName: req.body.fullName,
-        phone: req.body.phone,
-        tableNumber: req.body.tableNumber,
-        instructions: req.body.instructions
-    };
-
     const order = await Order.create({
 
-        userId: req.user._id,   // login reference
+        userId: req.user._id,
 
         items: orderItems,
 
-        customer: customerData, // billing info
+        customer: {
+            fullName: req.body.fullName,
+            phone: req.body.phone,
+            tableNumber: req.body.tableNumber,
+            instructions: req.body.instructions
+        },
 
         totalAmount: total,
 
@@ -512,17 +511,57 @@ app.post("/checkout",isLoggedIn, async (req, res) => {
     req.session.orderId = order._id;
 
     res.redirect("/payment");
+});
+
+app.get("/payment", async (req, res) => {
+
+    const order = await Order.findById(
+        req.session.orderId
+    );
+      let razorpayOrder;
+if (!order.razorpayOrderId) {
+
+     razorpayOrder =
+    await razorpay.orders.create({
+        amount: order.totalAmount * 100,
+        currency: "INR",
+        receipt: order._id.toString()
+    });
+
+    order.razorpayOrderId =
+    razorpayOrder.id;
+
+    await order.save();
+}
+ 
+    res.render("cart/payment", {
+        order,
+        razorpayOrder,
+         razorpayKey: process.env.RAZORPAY_KEY_ID
+    });
 
 });
 
-app.get("/payment",isLoggedIn, async (req, res) => {
+// app.get("/payment", async (req, res) => {
 
-    const order = await Order.findById(req.session.orderId);
+//   console.log(req.session.orderId);
+//     const orderId = req.session.orderId;
 
-    if (!order) return res.redirect("/cart");
+//     const order = await Order.findById(orderId);
 
-    res.render("payment", { order });
-});
+//     res.render("cart/payment", { order });
+
+// });
+
+
+// app.get("/payment",isLoggedIn, async (req, res) => {
+
+//     const order = await Order.findById(req.session.orderId);
+
+//     if (!order) return res.redirect("/cart");
+
+//     res.render("payment", { order });
+// });
 
 
 app.get("/err",(req ,res,) =>{

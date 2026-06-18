@@ -1,0 +1,173 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="payment-container">
+
+    <div class="payment-card">
+
+        <h2 class="title">Payment Summary</h2>
+
+        <div class="payment-grid">
+
+            <!-- LEFT SIDE -->
+            <div class="box">
+                <h3>Order Info</h3>
+                <p><strong>Order ID:</strong> <%= order._id %></p>
+                <p><strong>Status:</strong> <span class="status"><%= order.status %></span></p>
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="box">
+                <%
+    const subtotal = order.totalAmount;
+    const tax = subtotal * 0.05;
+    const platformFee = 10;
+    const total = subtotal + tax + platformFee;
+%>
+
+<h3>Amount Details</h3>
+
+<p><strong>Subtotal:</strong> ₹<%= subtotal %></p>
+
+<p><strong>Tax (5%):</strong> ₹<%= tax.toFixed(2) %></p>
+
+<p><strong>Platform Fee:</strong> ₹<%= platformFee %></p>
+
+<p class="total"><strong>Total:</strong> ₹<%= total.toFixed(2) %></p>
+            </div>
+
+        </div>
+
+        <!-- PAY BUTTON -->
+        <button id="pay-btn" class="pay-btn">
+            Pay ₹<%= total.toFixed(2) %>
+        </button>
+
+    </div>
+
+</div>
+<style>
+    body {
+    background: #f4f6f8;
+    font-family: Arial, sans-serif;
+}
+
+.payment-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+}
+
+.payment-card {
+    width: 500px;
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.payment-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.box {
+    flex: 1;
+    background: #f9fafc;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.box h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #222;
+}
+
+.box p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.status {
+    color: orange;
+    font-weight: bold;
+}
+
+.total {
+    font-size: 16px;
+    color: #000;
+}
+
+.pay-btn {
+    width: 100%;
+    padding: 12px;
+    background: #635bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.pay-btn:hover {
+    background: #4b42d6;
+    transform: translateY(-2px);
+}
+
+
+</style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.getElementById("pay-btn")
+.addEventListener("click", function() {
+
+    const subtotal = <%= order.totalAmount %>;
+    const tax = subtotal * 0.05;
+    const platformFee = 10;
+    const total = subtotal + tax + platformFee;
+
+    var options = {
+        key: "<%= razorpayKey %>",
+        amount: Math.round(total * 100), // paise
+        currency: "INR",
+        name: "Caffinity",
+        description: "Cafe",
+
+        // handler: function (response) {
+        //     console.log("Payment Success:", response);
+
+        //     // send to backend for verification
+        //     fetch("/payment/verify", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json"
+        //         },
+        //         body: JSON.stringify(response)
+        //     })
+        //     .then(res => res.json())
+        //     .then(data => {
+        //         window.location.href = "/payment/success";
+        //     })
+        //     .catch(err => {
+        //         console.log(err);
+        //     });
+        // }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+
+});
+</script>
