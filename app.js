@@ -29,7 +29,8 @@ require("dotenv").config();
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Login required" });
+    req.flash("error", "You need to login first");
+    return res.redirect("/user");
   }
   next();
 }
@@ -110,6 +111,12 @@ passport.deserializeUser(async (id, done) => {
 });
 
 
+app.use((req, res, next) => {
+  res.locals.currUser = req.user;
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
+});
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -120,24 +127,21 @@ const razorpay = new Razorpay({
 app.get('/auth/google',
   passport.authenticate('google',{scope: ['email','profile']})
 );
-app.get('/google/callback',
-  passport.authenticate('google',{
-    // successRedirect : '/protected',
-    failureRedirect: '/auth/failure',
 
+app.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/auth/failure',
   }),
   (req, res) => {
-
-    // 👇 YAHAN FLASH LAGANA HAI
     req.flash("success", `Welcome ${req.user.name}! 🚀`);
-
-    res.redirect("/");
+    res.redirect("/home");
   }
 );
 
-
-app.get('/auth/failure',(req,res)=>{
-  res.send("SOMETHING WENT WRONG...");
+app.get('/auth/failure', (req, res) => {
+  req.flash("error", "Google login failed. Please try again.");
+  res.redirect("/user");
 });
 
 
@@ -185,32 +189,48 @@ app.post("/signup", async (req, res, next) => {
 app.post(
   "/login",
   passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/login"
+    successRedirect: "/home",
+    failureRedirect: "/login",
+      failureFlash: "Invalid email or password"
   })
 );
+
+app.get("/login", (req, res) => {
+  
+    res.render("users/login.ejs");
+});
+
+//app.get('/logout', (req, res, next) => {
+//   req.logout(err => {
+//     if (err) return next(err);
+
+//     req.session.destroy(err => {
+//       if (err) return next(err);
+
+//       res.clearCookie('connect.sid', { path: '/' }); // ensure path matches session cookie
+//        req.flash("error", "You need to login first");
+//     // return res.redirect("/login");
+//    //rs
+//      res.redirect('/home');  
+//     });
+//   });
+// });
 
 app.get('/logout', (req, res, next) => {
   req.logout(err => {
     if (err) return next(err);
 
+    req.flash("success", "Logged out successfully!");
+
     req.session.destroy(err => {
       if (err) return next(err);
 
-      res.clearCookie('connect.sid', { path: '/' }); // ensure path matches session cookie
-      res.redirect('/home');  // **sirf yahi response bhejo**
+      res.clearCookie('connect.sid');
+      res.redirect('/home');
     });
   });
 });
 
-
-
-app.use((req, res, next) => {
-  res.locals.currentUser = req.session.user || null;
-  res.locals.success = req.flash("success");
-  res.locals.error = req.flash("error");
-  next();
-});
 
 // ====== Routes ======
 
@@ -464,7 +484,7 @@ cart.items.forEach(item => {
     res.render("cart/checkout", { cart, total });
 });
 
-app.post("/checkout", async (req, res) => {
+app.post("/checkout",isLoggedIn, async (req, res) => {
 
     const cart = await Cart.findOne({
         userId: req.user._id
@@ -513,7 +533,7 @@ app.post("/checkout", async (req, res) => {
     res.redirect("/payment");
 });
 
-app.get("/payment", async (req, res) => {
+app.get("/payment",isLoggedIn, async (req, res) => {
 
     const order = await Order.findById(
         req.session.orderId

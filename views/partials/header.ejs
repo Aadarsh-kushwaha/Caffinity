@@ -16,8 +16,11 @@
     <div class="flex-grow-1"></div>
 
   <div class="auth-section d-flex align-items-center">
-
-  <a href="/user" class="btn btn-link">Login</a>
+<% if(currUser) { %>
+    <a href="/logout" class="btn btn-link">Logout</a>
+<% } else { %>
+    <a href="/user" class="btn btn-link">Login</a>
+<% } %>
   <a class="ms-auto mt-1 d-block material-symbols-outlined" 
      style="font-size: 40px;" href="/cart">
     local_mall

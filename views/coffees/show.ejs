@@ -1,61 +1,180 @@
 <% layout('layouts/boilerplate') %>
 
+<style>
+  .coffee-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f3e5d8, #e6d3c3);
+    padding: 40px 20px;
+  }
 
-<div class="coffee-container d-flex justify-content-center align-items-center" 
-     style="min-height: 100vh; background: linear-gradient(to right, #f3e5d8, #e6d3c3);">
+  .coffee-card {
+    max-width: 850px;
+    width: 100%;
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #fffaf5;
+    transition: all 0.4s ease;
+  }
 
-  <div class="card shadow-lg border-4" 
-       style="max-width: 650px; border-radius: 15px; background-color: #fffaf5;">
+  .coffee-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .product-img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .product-img:hover {
+    transform: scale(1.08);
+  }
+
+  .product-title {
+    color: #4b2e2e;
+    font-weight: 700;
+    font-size: 2rem;
+  }
+
+  .product-description {
+    color: #6b4f4f;
+    line-height: 1.6;
+  }
+
+  .price-tag {
+    color: #6f4e37;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .rating-badge {
+    display: inline-block;
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 14px;
+    border-radius: 25px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    width: fit-content;
+  }
+
+  .category-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #6f4e37, #a47148);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .add-cart-btn {
+    background: linear-gradient(135deg, #6f4e37, #8b5e3c);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .add-cart-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(111, 78, 55, 0.35);
+    color: white;
+  }
+
+  .back-btn {
+    border: 2px solid #6f4e37;
+    color: #6f4e37;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .back-btn:hover {
+    background: #6f4e37;
+    color: white;
+  }
+
+  .product-details {
+    padding: 35px;
+  }
+</style>
+
+<div class="coffee-container d-flex justify-content-center align-items-center">
+
+  <div class="card coffee-card shadow-lg">
 
     <div class="row g-0">
 
-      <!-- Image -->
-      <div class="col-md-4 border">
-        <img src="<%= product.image %>" 
-             class="img-fluid h-100 w-100" 
-             style="object-fit: cover; border-top-left-radius: 15px; border-bottom-left-radius: 15px;" 
-             alt="<%= product.name %>">
+      <!-- Product Image -->
+      <div class="col-md-5">
+        <img
+          src="<%= product.image %>"
+          alt="<%= product.name %>"
+          class="product-img">
       </div>
 
-      <!-- Content -->
-      <div class="col-md-8">
-        <div class="card-body d-flex flex-column justify-content-center">
+      <!-- Product Details -->
+      <div class="col-md-7">
+        <div class="product-details d-flex flex-column justify-content-center h-100">
 
-          <h4 class="card-title fw-bold" style="color: #4b2e2e;">
+          <h2 class="product-title mb-3">
             <%= product.name %>
-          </h4>
+          </h2>
 
-          <p class="card-text" style="color: #6b4f4f;">
+          <p class="product-description">
             <%= product.description %>
           </p>
 
-          <p class="fw-semibold" style="color: #8b4513;">
+          <div class="price-tag">
             ₹ <%= product.price %>
-          </p>
+          </div>
 
-          <p class="mb-2">
+          <div class="rating-badge">
             ⭐ <%= product.avgRating %> / 5
-          </p>
+          </div>
 
-          <!-- 🔥 Category Tag -->
-          <span class="badge mb-2" 
-                style="background-color: <%= product.category === 'coffee' ? '#6f4e37' : '#17a2b8' %>;">
-            <%= product.category.toUpperCase() %>
-          </span>
+          <div>
+            <span class="category-badge">
+              <%= product.category.toUpperCase() %>
+            </span>
+          </div>
 
-          <!-- 🔥 Add to Cart Button -->
-          <form action="/cart/<%= product._id %>" method="POST">
-            <button class="btn mt-2" 
-                    style="background-color: #6f4e37; color: white; border-radius: 8px;">
-              Add to Cart
-            </button>
-          </form>
+          <!-- Buttons -->
+          <div class="d-flex gap-3 mt-3">
 
-          <!-- Back -->
-          <a href="/menu" class="btn mt-2" 
-             style="border: 1px solid #6f4e37; color: #6f4e37; border-radius: 8px;">
-            Back
-          </a>
+           <!-- <form action="/pushCart" method="POST">    
+              <button class="btn add-cart-btn">
+                <i class="fa-solid fa-cart-shopping me-2"></i>
+                Add to Cart
+              </button>
+            </form> -->
+        
+    <form action="/pushCart" method="POST">
+    <input type="hidden" name="productId" value="<%= product._id %>">
+
+    <button type="submit" class="btn add-cart-btn">
+        <i class="fa-solid fa-cart-shopping me-2"></i>
+        Add to Cart
+    </button>
+</form>
+
+            <a href="/menu" class="btn back-btn">
+              <i class="fa-solid fa-arrow-left me-2"></i>
+              Back
+            </a>
+
+          </div>
 
         </div>
       </div>
@@ -65,3 +184,7 @@
   </div>
 
 </div>
+
+<!-- Font Awesome CDN -->
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
