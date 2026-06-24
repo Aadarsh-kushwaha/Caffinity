@@ -26,6 +26,7 @@ const bcrypt = require("bcrypt");
 const Order = require("./models/order");
 const Razorpay = require("razorpay");
 require("dotenv").config();
+const userRoutes = require("./routes/users");
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -124,6 +125,8 @@ const razorpay = new Razorpay({
 
 // ====== Locals Middleware ======
 
+
+
 app.get('/auth/google',
   passport.authenticate('google',{scope: ['email','profile']})
 );
@@ -144,47 +147,7 @@ app.get('/auth/failure', (req, res) => {
   res.redirect("/user");
 });
 
-
-app.post("/signup", async (req, res, next) => {
-    try {
-        const { name, age, email, mobile, password, confirmPassword } = req.body;
-
-        if (password !== confirmPassword) {
-            return res.send("Passwords does not match");
-        }
-
-        const userExist = await User.findOne({ email });
-
-        if (userExist) {
-            return res.send("Email already registered");
-        }
-
-          const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = new User({
-            name,
-            age,
-            email,
-            mobile,
-            password: hashedPassword
-        });
-
-        await newUser.save();
-
-        req.login(newUser, (err) => {
-            if (err) {
-                console.log(err);
-                return next(err);
-            }
-
-            req.flash("success", "Welcome to Caffinity!");
-            res.redirect("/home");
-        });
-
-    } catch (err) {
-        res.send("Error: " + err.message);
-    }
-});
+app.use("/users", userRoutes);
 
 app.post(
   "/login",
