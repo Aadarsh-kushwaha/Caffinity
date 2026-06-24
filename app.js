@@ -27,6 +27,8 @@ const Order = require("./models/order");
 const Razorpay = require("razorpay");
 require("dotenv").config();
 const userRoutes = require("./routes/users");
+const authRoutes = require("./routes/google");
+const cartRoutes = require("./routes/cart");
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -125,6 +127,8 @@ const razorpay = new Razorpay({
 
 // ====== Locals Middleware ======
 
+// app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 
 app.get('/auth/google',
@@ -147,16 +151,6 @@ app.get('/auth/failure', (req, res) => {
   res.redirect("/user");
 });
 
-app.use("/users", userRoutes);
-
-app.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/home",
-    failureRedirect: "/login",
-      failureFlash: "Invalid email or password"
-  })
-);
 
 app.get("/login", (req, res) => {
   
@@ -179,20 +173,20 @@ app.get("/login", (req, res) => {
 //   });
 // });
 
-app.get('/logout', (req, res, next) => {
-  req.logout(err => {
-    if (err) return next(err);
+// app.get('/logout', (req, res, next) => {
+//   req.logout(err => {
+//     if (err) return next(err);
 
-    req.flash("success", "Logged out successfully!");
+//     req.flash("success", "Logged out successfully!");
 
-    req.session.destroy(err => {
-      if (err) return next(err);
+//     req.session.destroy(err => {
+//       if (err) return next(err);
 
-      res.clearCookie('connect.sid');
-      res.redirect('/home');
-    });
-  });
-});
+//       res.clearCookie('connect.sid');
+//       res.redirect('/home');
+//     });
+//   });
+// });
 
 
 // ====== Routes ======
@@ -283,40 +277,8 @@ app.get("/product/:id", async (req, res) => {
   res.render("coffees/show",{product});
 });
 
-app.post("/pushCart", isLoggedIn, async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { productId } = req.body;
-  
+app.use("/cart", cartRoutes);
 
-
-    let cart = await Cart.findOne({ userId });
-
-    if (!cart) {
-      cart = new Cart({ userId, items: [] });
-    }
-
-    let item = cart.items.find(i =>
-      i.productId.toString() === productId.toString()
-    );
-
-    if (item) {
-      item.quantity += 1;
-    } else {
-      cart.items.push({ productId, quantity: 1 });
-      
-    }
-
-    await cart.save();
-    req.flash("success", "Product Added To Cart");
-
-   res.redirect("/menu");
-
-  } catch (err) {
-    console.log("ERROR:", err);
-    res.send("Error ❌");
-  }
-});
 
 app.get("/cart", isLoggedIn, async (req, res) => {
   try {

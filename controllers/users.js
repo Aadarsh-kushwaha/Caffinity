@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const passport = require('passport');
 
 module.exports.signup = async (req, res, next) => {
     try {
@@ -33,11 +34,33 @@ module.exports.signup = async (req, res, next) => {
                 return next(err);
             }
 
-            req.flash("success", "Welcome to Caffinity by MVC!");
+            req.flash("success", "Welcome to Caffinity!");
             res.redirect("/home");
         });
 
     } catch (err) {
         res.send("Error: " + err.message);
     }
+};
+
+
+module.exports.login = passport.authenticate("local", {
+    successRedirect: "/home",
+    failureRedirect: "/login",
+    failureFlash: "Invalid email or password"
+});
+
+module.exports.logout =  (req, res, next) => {
+  req.logout(err => {
+    if (err) return next(err);
+
+    req.flash("success", "Logged out successfully!");
+
+    req.session.destroy(err => {
+      if (err) return next(err);
+
+      res.clearCookie('connect.sid');
+      res.redirect('/home');
+    });
+  });
 };
