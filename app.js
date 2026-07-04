@@ -183,7 +183,17 @@ app.get("/test-payment", (req, res) => {
 app.get("/payment", isLoggedIn, async (req, res) => {
     const order = await Order.findById(req.session.orderId);
 
-    return res.send("Order fetched");
+   let razorpayOrder;
+
+if (!order.razorpayOrderId) {
+    razorpayOrder = await razorpay.orders.create({
+        amount: order.totalAmount * 100,
+        currency: "INR",
+        receipt: order._id.toString()
+    });
+}
+
+return res.send("Razorpay Created");
 });
 // app.get("/payment",isLoggedIn, async (req, res) => {
 //                              console.log("===== PAYMENT ROUTE HIT =====");
