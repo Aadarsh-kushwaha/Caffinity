@@ -181,7 +181,9 @@ app.get("/test-payment", (req, res) => {
     res.send("TEST PAYMENT ROUTE WORKING");
 });
 app.get("/payment", isLoggedIn, async (req, res) => {
-    return res.send("After isLoggedIn");
+    const order = await Order.findById(req.session.orderId);
+
+    return res.send("Order fetched");
 });
 // app.get("/payment",isLoggedIn, async (req, res) => {
 //                              console.log("===== PAYMENT ROUTE HIT =====");
