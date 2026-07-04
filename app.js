@@ -131,7 +131,9 @@ const razorpay = new Razorpay({
 
 // ====== Locals Middleware ======
 
-// app.use("/auth", authRoutes);
+app.get("/", (req, res) => {
+  res.redirect("/render/home");
+});
 app.use("/users", userRoutes);
 
 
