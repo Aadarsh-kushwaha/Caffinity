@@ -17,6 +17,8 @@ router.put("/decrease/:productId",isLoggedIn,cartController.decreaseQuantity);
  router.get("/checkout",isLoggedIn,cartController.checkout);
  router.post("/totalSummary",isLoggedIn,cartController.totalSummary);
 
+ 
+
 
 
 module.exports = router;

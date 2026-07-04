@@ -11,7 +11,6 @@
 //         scope: ["email", "profile"]
 //     })
 // );
-
 // // Google Callback
 // router.get(
 //     "/google/callback",

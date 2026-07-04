@@ -213,5 +213,6 @@ module.exports.totalSummary = async (req, res) => {
 
     req.session.orderId = order._id;
 
-    res.redirect("/payment");
+   console.log("Redirecting...");
+res.redirect("/payment");
 };
