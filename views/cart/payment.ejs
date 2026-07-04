@@ -145,25 +145,6 @@ document.getElementById("pay-btn")
         name: "Caffinity",
         description: "Cafe",
 
-        // handler: function (response) {
-        //     console.log("Payment Success:", response);
-
-        //     // send to backend for verification
-        //     fetch("/payment/verify", {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json"
-        //         },
-        //         body: JSON.stringify(response)
-        //     })
-        //     .then(res => res.json())
-        //     .then(data => {
-        //         window.location.href = "/payment/success";
-        //     })
-        //     .catch(err => {
-        //         console.log(err);
-        //     });
-        // }
     };
 
     var rzp = new Razorpay(options);

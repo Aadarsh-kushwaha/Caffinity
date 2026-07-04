@@ -1,7 +1,8 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const passport = require('passport');
-
+const Query = require("../models/query");
+console.log("Contact Route Hit");
 module.exports.signup = async (req, res, next) => {
     try {
         const { name, age, email, mobile, password, confirmPassword } = req.body;
@@ -35,7 +36,7 @@ module.exports.signup = async (req, res, next) => {
             }
 
             req.flash("success", "Welcome to Caffinity!");
-            res.redirect("/home");
+            res.redirect("/render/home");
         });
 
     } catch (err) {
@@ -45,8 +46,8 @@ module.exports.signup = async (req, res, next) => {
 
 
 module.exports.login = passport.authenticate("local", {
-    successRedirect: "/home",
-    failureRedirect: "/login",
+    successRedirect: "/render/home",
+    failureRedirect: "/render/login",
     failureFlash: "Invalid email or password"
 });
 
@@ -60,7 +61,31 @@ module.exports.logout =  (req, res, next) => {
       if (err) return next(err);
 
       res.clearCookie('connect.sid');
-      res.redirect('/home');
+      res.redirect('/render/home');
     });
   });
+};
+
+
+module.exports.contact = async(req, res) => {
+ try{
+  const {name,email,mobile,issue , source , message } = req.body;
+  const newQuery = new Query({
+    name,
+    email,
+    mobile,
+    issue,
+    source,
+    message,
+  });
+ 
+ await newQuery.save();
+ 
+req.flash("success", "Your response is recorded");
+
+return res.redirect("/render/contact");
+
+ }catch(err){
+  res.send("Error:" + err.message);
+ }
 };

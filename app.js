@@ -29,6 +29,7 @@ require("dotenv").config();
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/google");
 const cartRoutes = require("./routes/cart");
+const renderRoutes = require("./routes/render");
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -40,13 +41,16 @@ function isLoggedIn(req, res, next) {
 
 
 // ====== MongoDB Connection ======
-const dburl = "mongodb://127.0.0.1:27017/coffee-shop";
+ // const dburl = "mongodb://127.0.0.1:27017/coffee-shop";
+
+ 
+const mongoURL = process.env.ATLASDB_URL ;
 
 
 
 // Connect to MongoDB
 async function main() {
-    await mongoose.connect(dburl);
+    await mongoose.connect(mongoURL);
 }
 main()
   .then(() => {
@@ -78,7 +82,7 @@ app.use(express.static(path.join(__dirname, "Init")));
 
 // ====== Session Config ======
 const store = MongoStore.create({
-  mongoUrl: dburl,
+  mongoUrl: mongoURL,
   touchAfter: 24 * 60 * 60, // reduce session updates
 });
 
@@ -142,51 +146,19 @@ app.get(
   }),
   (req, res) => {
     req.flash("success", `Welcome ${req.user.name}! 🚀`);
-    res.redirect("/home");
+    res.redirect("/render/home");
   }
 );
 
 app.get('/auth/failure', (req, res) => {
   req.flash("error", "Google login failed. Please try again.");
-  res.redirect("/user");
+  res.redirect("/render/home");
 });
 
+app.use("/render" , renderRoutes);
+app.use("/cart", cartRoutes);
 
-app.get("/login", (req, res) => {
-  
-    res.render("users/login.ejs");
-});
 
-//app.get('/logout', (req, res, next) => {
-//   req.logout(err => {
-//     if (err) return next(err);
-
-//     req.session.destroy(err => {
-//       if (err) return next(err);
-
-//       res.clearCookie('connect.sid', { path: '/' }); // ensure path matches session cookie
-//        req.flash("error", "You need to login first");
-//     // return res.redirect("/login");
-//    //rs
-//      res.redirect('/home');  
-//     });
-//   });
-// });
-
-// app.get('/logout', (req, res, next) => {
-//   req.logout(err => {
-//     if (err) return next(err);
-
-//     req.flash("success", "Logged out successfully!");
-
-//     req.session.destroy(err => {
-//       if (err) return next(err);
-
-//       res.clearCookie('connect.sid');
-//       res.redirect('/home');
-//     });
-//   });
-// });
 
 
 // ====== Routes ======
@@ -203,260 +175,7 @@ app.get('/check', (req, res) => {
   }
 });
 
-app.get("/home", (req, res) => {
-    res.render("coffees/index");
-});
 
-app.get("/about", (req, res) => {
-    res.render("coffees/about");
-});
-
-
-
-
-
-app.get("/menu", async (req, res) => {
-    const coffees = await Product.find({ category: "coffee" });
-    const drinks = await Product.find({ category: "drink" });
-
-    res.render("coffees/menu", { coffees, drinks });
-});
-
-
-app.get("/pages", (req, res) => {
-  res.send("This page is not available yet"); // views/menu.ejs
-});
-app.get("/connect", (req, res) => {
-    res.render("coffees/contact");
-});
-
-
-app.get("/user", (req, res) => {
-   res.render("users/login");
-});
-
-
-app.get("/signup", (req, res) => {
-   res.render("users/signup");
-});
-
-
-// GET route
-app.get("/contact", (req, res) => {
-  res.render("coffees/contact");
-});
-
-// POST route
-app.post("/contact", validateContact, async(req, res) => {
- try{
-  const {name,email,mobile,issue , source , message } = req.body;
-  const newQuery = new Query({
-    name,
-    email,
-    mobile,
-    issue,
-    source,
-    message,
-  });
- 
- await newQuery.save();
- 
-req.flash("success", "Your response is recorded");
-
-return res.redirect("/contact");
-
- }catch(err){
-  res.send("Error:" + err.message);
- }
-});
-
-app.get("/product/:id", async (req, res) => {
-    const product = await Product.findById(req.params.id);
-   // res.send(coffee.name);
-   //res.send(`Your clicked button named as ${coffee.name} and cost is : ${coffee.price} `);
-  res.render("coffees/show",{product});
-});
-
-app.use("/cart", cartRoutes);
-
-
-app.get("/cart", isLoggedIn, async (req, res) => {
-  try {
-    const userId = req.user._id;
-
-    const cartData = await Cart.findOne({ userId })
-      .populate("items.productId");
-
-    if (!cartData) {
-      return res.render("cart/cart", {
-        cart: []
-      });
-    }
-
-    const cart = cartData.items.map(item => {
-      return {
-        productId: item.productId._id,
-        name: item.productId.name,
-        price: item.productId.price,
-        image: item.productId.image,
-        quantity: item.quantity
-      };
-    });
-
-    res.render("cart/cart", {
-      cart
-    });
-
-  } catch (err) {
-    console.log(err);
-    res.send("Error loading cart");
-  }
-});
-
-app.delete("/cart/:productId", isLoggedIn, async (req, res) => {
-  const userId = req.user._id;
-  const { productId } = req.params;
-
-  await Cart.updateOne(
-    { userId },
-    {
-      $pull: {
-        items: { productId: productId }
-      }
-    }
-  );
-  req.flash("success", "Product removed from the cart");
-  res.redirect("/cart");
-});
-app.put("/cart/increase/:productId", isLoggedIn, async (req, res) => {
-  const userId = req.user._id;
-  const { productId } = req.params;
-
-  await Cart.updateOne(
-    { userId, "items.productId": productId },
-    {
-      $inc: { "items.$.quantity": 1 }
-    }
-  );
-
-  req.flash("success", "Quantity Increased");
-
-  return res.redirect("/cart");
-});
-
-
-
-
-app.put("/cart/decrease/:productId", isLoggedIn, async (req, res) => {
-  const userId = req.user._id;
-  const { productId } = req.params;
-
-  const cart = await Cart.findOne({ userId });
-
-  const item = cart.items.find(
-    i => i.productId.toString() === productId
-  );
-
-  if (!item) {
-    return res.redirect("/cart");
-  }
-
-  if (item.quantity <= 1) {
-
-    await Cart.updateOne(
-      { userId },
-      {
-        $pull: { items: { productId } }
-      }
-    );
-
-    req.flash("success", "Product Removed");
-
-  } else {
-
-    await Cart.updateOne(
-      { userId, "items.productId": productId },
-      {
-        $inc: { "items.$.quantity": -1 }
-      }
-    );
-
-    req.flash("success", "Quantity Decreased");
-  }
-
-  return res.redirect("/cart");
-});
-
-
-app.get("/checkout",isLoggedIn, async (req, res) => {
-
-const cart = await Cart.findOne({
-   userId: req.user._id
- 
-}).populate("items.productId");
-
-
-if (!cart || cart.items.length === 0) {
-  return res.redirect("/cart");
-}
-
-let total = 0;
-
-cart.items.forEach(item => {
-  total += item.productId.price * item.quantity;
-});
-
-    res.render("cart/checkout", { cart, total });
-});
-
-app.post("/checkout",isLoggedIn, async (req, res) => {
-
-    const cart = await Cart.findOne({
-        userId: req.user._id
-    }).populate("items.productId");
-
-    if (!cart || cart.items.length === 0) {
-        return res.redirect("/cart");
-    }
-
-    let total = 0;
-    let orderItems = [];
-
-    for (let item of cart.items) {
-
-        total += item.productId.price * item.quantity;
-
-        orderItems.push({
-            productId: item.productId._id,
-            name: item.productId.name,
-            price: item.productId.price,
-            quantity: item.quantity,
-            image: item.productId.image
-        });
-    }
-
-    const order = await Order.create({
-
-        userId: req.user._id,
-
-        items: orderItems,
-
-        customer: {
-            fullName: req.body.fullName,
-            phone: req.body.phone,
-            tableNumber: req.body.tableNumber,
-            instructions: req.body.instructions
-        },
-
-        totalAmount: total,
-
-        status: "payment_pending"
-    });
-
-    req.session.orderId = order._id;
-
-    res.redirect("/payment");
-});
 
 app.get("/payment",isLoggedIn, async (req, res) => {
 
@@ -487,26 +206,6 @@ if (!order.razorpayOrderId) {
 
 });
 
-// app.get("/payment", async (req, res) => {
-
-//   console.log(req.session.orderId);
-//     const orderId = req.session.orderId;
-
-//     const order = await Order.findById(orderId);
-
-//     res.render("cart/payment", { order });
-
-// });
-
-
-// app.get("/payment",isLoggedIn, async (req, res) => {
-
-//     const order = await Order.findById(req.session.orderId);
-
-//     if (!order) return res.redirect("/cart");
-
-//     res.render("payment", { order });
-// });
 
 
 app.get("/err",(req ,res,) =>{
@@ -528,4 +227,3 @@ const PORT = 8080;
 app.listen(3000, "0.0.0.0", () => {
   console.log("Server running");
 });
-

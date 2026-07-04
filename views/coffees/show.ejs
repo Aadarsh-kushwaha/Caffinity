@@ -153,14 +153,8 @@
           <!-- Buttons -->
           <div class="d-flex gap-3 mt-3">
 
-           <!-- <form action="/pushCart" method="POST">    
-              <button class="btn add-cart-btn">
-                <i class="fa-solid fa-cart-shopping me-2"></i>
-                Add to Cart
-              </button>
-            </form> -->
         
-    <form action="/pushCart" method="POST">
+    <form action="/cart/push" method="POST">
     <input type="hidden" name="productId" value="<%= product._id %>">
 
     <button type="submit" class="btn add-cart-btn">
@@ -169,7 +163,7 @@
     </button>
 </form>
 
-            <a href="/menu" class="btn back-btn">
+            <a href="/render/menu" class="btn back-btn">
               <i class="fa-solid fa-arrow-left me-2"></i>
               Back
             </a>

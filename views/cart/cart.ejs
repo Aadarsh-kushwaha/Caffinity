@@ -141,7 +141,7 @@
               <div class="d-flex flex-column align-items-end">
                
 
-              <form action="/cart/<%= item.productId %>?_method=DELETE" method="POST">
+              <form  action="/cart/<%= item.productId %>?_method=DELETE" method="POST">
   <button type="submit" style="border:none; background:none;">
     <span class="material-symbols-outlined delete-icon">
       delete
@@ -186,7 +186,7 @@
         <p class="text-muted mb-1">Total Payable</p>
         <h2 class="fw-bold mb-4 text-warning">₹<%= total %></h2>
 
-        <a href="/checkout" class="btn checkout-btn w-100">
+        <a href="/cart/checkout" class="btn checkout-btn w-100">
          Continue 
         </a>
 
