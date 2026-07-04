@@ -169,6 +169,8 @@ cart.items.forEach(item => {
 
 module.exports.totalSummary = async (req, res) => {
 
+                                                 console.log("Total summary hit");
+
     const cart = await Cart.findOne({
         userId: req.user._id
     }).populate("items.productId");
@@ -193,6 +195,9 @@ module.exports.totalSummary = async (req, res) => {
         });
     }
 
+                                             console.log("Creating order...");
+
+
     const order = await Order.create({
 
         userId: req.user._id,
@@ -211,8 +216,12 @@ module.exports.totalSummary = async (req, res) => {
         status: "payment_pending"
     });
 
-    req.session.orderId = order._id;
+                                         console.log("Order Created:", order._id);
 
-   console.log("Redirecting...");
-res.redirect("/payment");
+                                      
+    req.session.orderId = order._id;
+                        console.log("Session Order ID Saved:", req.session.orderId);
+
+                                     console.log("Redirecting to payment ...");
+        return res.redirect("/payment");
 };

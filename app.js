@@ -182,6 +182,12 @@ app.get("/test-payment", (req, res) => {
 });
 
 app.get("/payment",isLoggedIn, async (req, res) => {
+                             console.log("===== PAYMENT ROUTE HIT =====");
+                            console.log("User:", req.user?.email);
+                     console.log("Session Order ID:", req.session.orderId);
+
+                        const order = await Order.findById(req.session.orderId);
+                                console.log("Order:", order);
 
     const order = await Order.findById(
         req.session.orderId
