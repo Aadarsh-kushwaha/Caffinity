@@ -89,13 +89,13 @@ const store = MongoStore.create({
 
 app.use(cookieParser());
 app.use(session({
-    secret: "cats",
+    store: store,
+    secret: process.env.SESSION_SECRET || "cats",
     resave: false,
-    saveUninitialized: true,
-     cookie: {
-      httpOnly: true,
-      expires: Date.now() + 1000 * 60 * 60 * 24 * 3, // 3 days
-      maxAge: 1000 * 60 * 60 * 24 * 3,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 3,
     },
 }));
 app.use(flash());
@@ -181,43 +181,47 @@ app.get("/test-payment", (req, res) => {
     res.send("TEST PAYMENT ROUTE WORKING");
 });
 
-app.get("/payment",isLoggedIn, async (req, res) => {
-                             console.log("===== PAYMENT ROUTE HIT =====");
-                            console.log("User:", req.user?.email);
-                     console.log("Session Order ID:", req.session.orderId);
+app.get("/payment", (req, res) => {
+  return res.send("Payment Route OK");
+});
+
+// app.get("/payment",isLoggedIn, async (req, res) => {
+//                              console.log("===== PAYMENT ROUTE HIT =====");
+//                             console.log("User:", req.user?.email);
+//                      console.log("Session Order ID:", req.session.orderId);
 
                       
                      
-                     const order = await Order.findById(
-                       req.session.orderId
-                      );
-                      console.log("Order:", order);
-                                                   if (!order) {
-                                 return res.status(404).send("Order not found");
-                                                      }
-      let razorpayOrder;
-if (!order.razorpayOrderId) {
+//                      const order = await Order.findById(
+//                        req.session.orderId
+//                       );
+//                       console.log("Order:", order);
+//                                                    if (!order) {
+//                                  return res.status(404).send("Order not found");
+//                                                       }
+//       let razorpayOrder;
+// if (!order.razorpayOrderId) {
 
-     razorpayOrder =
-    await razorpay.orders.create({
-        amount: order.totalAmount * 100,
-        currency: "INR",
-        receipt: order._id.toString()
-    });
+//      razorpayOrder =
+//     await razorpay.orders.create({
+//         amount: order.totalAmount * 100,
+//         currency: "INR",
+//         receipt: order._id.toString()
+//     });
 
-    order.razorpayOrderId =
-    razorpayOrder.id;
+//     order.razorpayOrderId =
+//     razorpayOrder.id;
 
-    await order.save();
-}
+//     await order.save();
+// }
  
-    res.render("cart/payment", {
-        order,
-        razorpayOrder,
-         razorpayKey: process.env.RAZORPAY_KEY_ID
-    });
+//     res.render("cart/payment", {
+//         order,
+//         razorpayOrder,
+//          razorpayKey: process.env.RAZORPAY_KEY_ID
+//     });
 
-});
+// });
 
 
 
