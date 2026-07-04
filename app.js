@@ -192,6 +192,9 @@ app.get("/payment",isLoggedIn, async (req, res) => {
                        req.session.orderId
                       );
                       console.log("Order:", order);
+                                                   if (!order) {
+                                 return res.status(404).send("Order not found");
+                                                      }
       let razorpayOrder;
 if (!order.razorpayOrderId) {
 
