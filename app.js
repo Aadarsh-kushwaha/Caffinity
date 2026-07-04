@@ -180,11 +180,9 @@ app.get('/check', (req, res) => {
 app.get("/test-payment", (req, res) => {
     res.send("TEST PAYMENT ROUTE WORKING");
 });
-
-app.get("/payment", (req, res) => {
-  return res.send("Payment Route OK");
+app.get("/payment", isLoggedIn, async (req, res) => {
+    return res.send("After isLoggedIn");
 });
-
 // app.get("/payment",isLoggedIn, async (req, res) => {
 //                              console.log("===== PAYMENT ROUTE HIT =====");
 //                             console.log("User:", req.user?.email);
