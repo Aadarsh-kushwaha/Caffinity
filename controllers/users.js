@@ -2,7 +2,7 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const passport = require('passport');
 const Query = require("../models/query");
-console.log("Contact Route Hit");
+
 module.exports.signup = async (req, res, next) => {
     try {
         const { name, age, email, mobile, password, confirmPassword } = req.body;
