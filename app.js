@@ -178,7 +178,7 @@ app.get('/check', (req, res) => {
 });
 
 
-// app.get("/payment", isLoggedIn, async (req, res) => {
+app.get("/payment", isLoggedIn, async (req, res) => {
 //   console.log("pass check env");
 //   console.log("KEY_ID:", process.env.RAZORPAY_KEY_ID);
 // console.log("KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET);
@@ -194,45 +194,45 @@ app.get('/check', (req, res) => {
 //     });
 // }
 
-// return res.send("Razorpay Created");
-// });
-app.get("/payment",isLoggedIn, async (req, res) => {
-                             console.log("===== PAYMENT ROUTE HIT =====");
-                            console.log("User:", req.user?.email);
-                     console.log("Session Order ID:", req.session.orderId);
+return res.send("Razorpay Created");
+});
+// app.get("/payment",isLoggedIn, async (req, res) => {
+//                              console.log("===== PAYMENT ROUTE HIT =====");
+//                             console.log("User:", req.user?.email);
+//                      console.log("Session Order ID:", req.session.orderId);
 
                       
                      
-                     const order = await Order.findById(
-                       req.session.orderId
-                      );
-                      console.log("Order:", order);
-                                                   if (!order) {
-                                 return res.status(404).send("Order not found");
-                                                      }
-      let razorpayOrder;
-if (!order.razorpayOrderId) {
+//                      const order = await Order.findById(
+//                        req.session.orderId
+//                       );
+//                       console.log("Order:", order);
+//                                                    if (!order) {
+//                                  return res.status(404).send("Order not found");
+//                                                       }
+//       let razorpayOrder;
+// if (!order.razorpayOrderId) {
 
-     razorpayOrder =
-    await razorpay.orders.create({
-        amount: order.totalAmount * 100,
-        currency: "INR",
-        receipt: order._id.toString()
-    });
+//      razorpayOrder =
+//     await razorpay.orders.create({
+//         amount: order.totalAmount * 100,
+//         currency: "INR",
+//         receipt: order._id.toString()
+//     });
 
-    order.razorpayOrderId =
-    razorpayOrder.id;
+//     order.razorpayOrderId =
+//     razorpayOrder.id;
 
-    await order.save();
-}
+//     await order.save();
+// }
  
-    res.render("cart/payment", {
-        order,
-        razorpayOrder,
-         razorpayKey: process.env.RAZORPAY_KEY_ID
-    });
+//     res.render("cart/payment", {
+//         order,
+//         razorpayOrder,
+//          razorpayKey: process.env.RAZORPAY_KEY_ID
+//     });
 
-});
+// });
 
 
 
