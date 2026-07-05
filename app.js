@@ -179,10 +179,10 @@ app.get('/check', (req, res) => {
 
 
 app.get("/payment", isLoggedIn, async (req, res) => {
-//   console.log("pass check env");
-//   console.log("KEY_ID:", process.env.RAZORPAY_KEY_ID);
-// console.log("KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET);
-//     const order = await Order.findById(req.session.orderId);
+  console.log("pass check env");
+  console.log("KEY_ID:", process.env.RAZORPAY_KEY_ID);
+console.log("KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET);
+    const order = await Order.findById(req.session.orderId);
 
 //    let razorpayOrder;
 
