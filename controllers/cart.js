@@ -166,10 +166,7 @@ cart.items.forEach(item => {
     res.render("cart/checkout", { cart, total });
 };
 
-
 module.exports.totalSummary = async (req, res) => {
-
-                                                 console.log("Total summary hit");
 
     const cart = await Cart.findOne({
         userId: req.user._id
@@ -195,9 +192,6 @@ module.exports.totalSummary = async (req, res) => {
         });
     }
 
-                                             console.log("Creating order...");
-
-
     const order = await Order.create({
 
         userId: req.user._id,
@@ -216,12 +210,15 @@ module.exports.totalSummary = async (req, res) => {
         status: "payment_pending"
     });
 
-                                         console.log("Order Created:", order._id);
-
-                                      
     req.session.orderId = order._id;
-                        console.log("Session Order ID Saved:", req.session.orderId);
 
-                                     console.log("Redirecting to payment ...");
-        return res.redirect("/payment");
+    req.session.save((err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Session save failed");
+        }
+
+        res.redirect("/payment");
+    });
+
 };
